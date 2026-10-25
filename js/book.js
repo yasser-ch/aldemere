@@ -15,7 +15,7 @@
 
   var RIBBONS = [
     ['Game', 'about', '#8c2417'], ['Realm', 'realm', '#27457f'], ['Foes', 'bestiary', '#6b2f6e'], ['Gear', 'armoury', '#a56a1a'],
-    ['Heroes', 'faces', '#2f6e57'], ['Scenes', 'gallery', '#8c2417'], ['Dice', 'dice', '#27457f'], ['Road', 'progress', '#6b2f6e'],
+    ['Heroes', 'faces', '#2f6e57'], ['Cast', 'cast', '#27457f'], ['Scenes', 'gallery', '#8c2417'], ['Dice', 'dice', '#27457f'], ['Road', 'progress', '#6b2f6e'],
     ['News', 'chronicle', '#a56a1a'], ['Write', 'suggest', '#2f6e57']
   ];
 
@@ -206,6 +206,29 @@
     fb.showModal();
   });
   if (fb) fb.addEventListener('click', function (e) { if (e.target === fb) fb.close(); });
+  // the cast
+  var cb = document.getElementById('castbox');
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('.cast-btn') : null;
+    if (!b || !cb || !cb.showModal) return;
+    var im = cb.querySelector('.cimg'); im.src = 'img/cast/' + b.dataset.cast + '.webp'; im.alt = b.dataset.name;
+    cb.querySelector('h3').textContent = b.dataset.name;
+    cb.querySelector('.vig').textContent = b.dataset.role;
+    cb.querySelector('.lore').textContent = b.dataset.bio;
+    cb.showModal();
+  });
+  if (cb) cb.addEventListener('click', function (e) { if (e.target === cb) cb.close(); });
+  // dust drifting up through the lamplight, behind the book
+  if (!reduce && !document.querySelector('.motes') && document.body.classList.contains('bookpage')) {
+    var mo = document.createElement('div'); mo.className = 'motes'; mo.setAttribute('aria-hidden', 'true');
+    for (var m = 0; m < 26; m++) {
+      var s = document.createElement('i'), sz = 2 + Math.random() * 2.5;
+      s.style.cssText = 'left:' + (Math.random() * 100) + '%;width:' + sz + 'px;height:' + sz + 'px;animation-duration:' + (14 + Math.random() * 18) + 's;animation-delay:-' + (Math.random() * 30) + 's;--dx:' + ((Math.random() - .5) * 120) + 'px';
+      mo.appendChild(s);
+    }
+    document.body.insertBefore(mo, document.body.firstChild);
+    var tl = document.createElement('div'); tl.className = 'torchlight'; tl.setAttribute('aria-hidden', 'true'); document.body.insertBefore(tl, mo);
+  }
   // the map
   var mb = document.getElementById('mapbox');
   document.addEventListener('click', function (e) { if (mb && mb.showModal && e.target.closest && e.target.closest('.mapfig')) mb.showModal(); });

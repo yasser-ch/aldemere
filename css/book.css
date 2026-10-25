@@ -7,6 +7,7 @@
 @font-face { font-family: 'Pixelify Sans'; font-weight: 700; font-display: swap; src: url('../fonts/pixelify-sans-latin-700-normal.woff2') format('woff2'); }
 
 :root {
+  --wood: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='300'><filter id='w' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.004 .09' numOctaves='4' seed='7'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .26  0 0 0 0 .13  0 0 0 1.1 -.42'/></filter><rect width='100%' height='100%' filter='url(%23w)' opacity='.55'/></svg>");
   --paper: #efe2c2;
   --paper-2: #e4d3a8;
   --paper-edge: #c9b27c;
@@ -29,6 +30,25 @@ body.bookpage main { padding: 24px 0 60px; }
 
 /* ── The book, when script binds it ────────────────────────────────────── */
 html.js body.bookpage { overflow: hidden; height: 100dvh; background: radial-gradient(ellipse at 50% 40%, #3a2417 0%, #1a110b 55%, #0c0705 100%); }
+/* the desk: wood grain, a lamp's warm pool, a dark vignette and drifting dust */
+html.js body.bookpage::before { content: ''; position: fixed; inset: 53px 0 0 0; z-index: 0; pointer-events: none; background:
+  radial-gradient(ellipse 60% 55% at 50% 48%, #0006 0%, #0003 55%, transparent 80%),
+  radial-gradient(ellipse at 50% 50%, transparent 55%, #000a 100%),
+  url(../img/dungeon-wide.webp) center / cover no-repeat, #120b07; }
+@media (max-aspect-ratio: 4/5), (max-width: 860px) { html.js body.bookpage::before { background:
+  radial-gradient(ellipse 80% 60% at 50% 50%, #0006 0%, #0003 60%, transparent 85%),
+  radial-gradient(ellipse at 50% 50%, transparent 55%, #000a 100%),
+  url(../img/dungeon-tall.webp) center / cover no-repeat, #120b07; } }
+/* the torches breathe a little */
+html.js body.bookpage .torchlight { position: fixed; inset: 53px 0 0 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 22% 30% at 8% 6%, #ff9a3a33, transparent 70%), radial-gradient(ellipse 22% 30% at 92% 6%, #ff9a3a33, transparent 70%); animation: flick 3.2s ease-in-out infinite alternate; mix-blend-mode: screen; }
+@keyframes flick { 0% { opacity: .55; } 30% { opacity: .95; } 55% { opacity: .7; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .torchlight { animation: none !important; } }
+html.js body.bookpage::after { content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 22vh; z-index: 0; pointer-events: none; background: linear-gradient(to top, #000a, transparent); }
+html.js body.bookpage .bar, html.js body.bookpage main { position: relative; z-index: 1; }
+.motes { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.motes i { position: absolute; bottom: -10px; width: 3px; height: 3px; background: #ffd58a; border-radius: 50%; opacity: 0; box-shadow: 0 0 6px 1px #f4b95a88; animation: mote linear infinite; }
+@keyframes mote { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: .75; } 70% { opacity: .5; } 100% { transform: translate(var(--dx, 30px), -105vh); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .motes { display: none; } }
 html.js body.bookpage main { padding: 0; height: calc(100dvh - 53px); display: grid; place-items: center; position: relative; }
 html.js .stage { position: relative; display: grid; place-items: center; width: 100%; height: 100%; perspective: 2600px; }
 html.js .book { display: block; position: relative; width: calc(var(--pw) * 2); height: var(--ph); margin: 0; gap: 0; transform-style: preserve-3d; transition: transform var(--turn) cubic-bezier(.45,.05,.2,1); transform: translateX(calc(var(--pw) * -.5)); }
@@ -428,3 +448,19 @@ html.js .board { background-color: #4a1a10; background-image: var(--scuff), var(
 
 @media (max-width: 860px) { .page > .pg, .page > .plate-ex { font-size: clamp(13px, 3.9cqw, 17px); } }
 .plate .art { height: 6.6em; } .plate b { font-size: .9em; }
+
+/* ── the cast ──────────────────────────────────────────────────────────── */
+.castgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7em .6em; margin-top: 1em; }
+.cast-btn { font: inherit; padding: .3em; cursor: pointer; display: grid; align-content: start; justify-items: center; text-align: center; background: transparent; border: 0; color: var(--ink); }
+.cast-btn .frame { display: block; width: 100%; padding: .22em; background: linear-gradient(135deg, #e6c36a, #8a6422 55%, #d9ac45); box-shadow: 0 3px 8px #0006, inset 0 0 0 1px #3a2610; transition: transform .15s, box-shadow .15s; }
+.cast-btn .frame img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; border: 1px solid #2a1a0c; background: #231810; filter: sepia(.28) saturate(.85) contrast(1.02); transition: filter .2s; }
+.cast-btn:hover .frame, .cast-btn:focus-visible .frame { transform: translateY(-3px); box-shadow: 0 7px 14px #0007, 0 0 .9em #d9ac4566, inset 0 0 0 1px #3a2610; }
+.cast-btn:hover img, .cast-btn:focus-visible img { filter: none; }
+.cast-btn b { font-family: var(--caps); font-weight: 400; font-size: .86em; margin-top: .45em; line-height: 1.1; }
+.cast-btn i { font-size: .72em; color: var(--ink-soft); line-height: 1.15; }
+.foebox .cimg { background: radial-gradient(ellipse at 50% 90%, #3a2417, #1d130c 75%); width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; border: 2px solid var(--gold); }
+.castgrid.four { grid-template-columns: repeat(4, 1fr); gap: .8em .5em; }
+.castgrid.four .cast-btn { padding: .15em; }
+.castgrid.four .cast-btn b { font-size: .78em; }
+.castgrid.four .cast-btn i { font-size: .66em; }
+.foebox .fb > img.cimg { aspect-ratio: 4 / 5; object-fit: cover; object-position: top; }
