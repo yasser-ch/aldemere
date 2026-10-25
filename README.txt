@@ -33,7 +33,7 @@ How the book works (new)
   in the #hero-data block and the CLASSES table in js/book.js. These mirror the game; update them when the game changes.
 - News: the Chronicle page lists the three newest posts. Add the post to devlog/ as before, then add an <li> there and in
   devlog/index.html.
-- Sound is a soft paper rustle, off by default (the visitor can switch it on under the book).
+- Sound is two real page-flip recordings used in turn (audio/flip-1.mp3, flip-2.mp3), on by default (the visitor can switch it off under the book).
 
 The cast and the desk
 - The cast chapter (pages 13 and 14) is generated from the CAST_A and CAST_B lists in the build script. Names, roles and bios are the game's own, so keep them spoiler-free. Clicking a portrait opens the #castbox dialog.

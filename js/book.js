@@ -19,19 +19,20 @@
     ['News', 'chronicle', '#a56a1a'], ['Write', 'suggest', '#2f6e57']
   ];
 
-  /* ── sound: a soft paper rustle, off until asked for ─────────────────── */
-  var audio = null, soundOn = false;
-  try { soundOn = localStorage.getItem('aldemere-sound') === '1'; } catch (e) {}
+  /* ── sound: two real page flips, used in turn; on by default ───── */
+  var soundOn = true, flips = [], flipN = 0;
+  try { if (localStorage.getItem('aldemere-sound') === '0') soundOn = false; } catch (e) {}
+  function loadFlips() {
+    if (flips.length) return;
+    ['audio/flip-1.mp3', 'audio/flip-2.mp3'].forEach(function (u) { var a = new Audio(u); a.preload = 'auto'; a.volume = .8; flips.push(a); });
+  }
+  if (soundOn) loadFlips();
   function rustle() {
     if (!soundOn) return;
     try {
-      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      var len = Math.floor(audio.sampleRate * 0.34), buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
-      for (var i = 0; i < len; i++) { var t = i / len; d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * t) * (0.6 + 0.4 * Math.sin(t * 40)); }
-      var src = audio.createBufferSource(); src.buffer = buf;
-      var bp = audio.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1700; bp.Q.value = 0.6;
-      var g = audio.createGain(); g.gain.value = 0.16;
-      src.connect(bp); bp.connect(g); g.connect(audio.destination); src.start();
+      loadFlips();
+      var a = flips[flipN++ % flips.length];
+      a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {});
     } catch (e) {}
   }
 
