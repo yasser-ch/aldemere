@@ -25,7 +25,7 @@ Change a screenshot or foe
 How the book works (new)
 - index.html holds every page as a <section class="page" data-id="...">, in reading order. js/book.js binds them into
   sheets that turn (two pages per sheet, so the page count must stay EVEN; add or remove pages in pairs, or add a
-  blank page). Page 0 is the cover and the last page is the inside back cover. Without script the pages simply stack.
+  blank page). Page 0 is the cover and the last page is the outside back cover, and the book closes on it. Without script the pages simply stack.
 - Spreads are (1,2) (3,4) (5,6)... so a chapter that starts on an odd page opens on the left. The contents page
   (data-go links) and the ribbons (RIBBONS at the top of js/book.js) point at data-id values, not numbers, but the page
   numbers printed in the contents list are typed by hand: update them if pages move.
@@ -34,7 +34,14 @@ How the book works (new)
 - News: the Chronicle page lists the three newest posts. Add the post to devlog/ as before, then add an <li> there and in
   devlog/index.html.
 - Sound is two real page-flip recordings used in turn (audio/flip-1.mp3, flip-2.mp3), on by default (the visitor can switch it off under the book).
+- Background music is two tracks from the game itself (audio/music-1.mp3, music-2.mp3: the town themes), quiet, played in turn after the first click; it follows the Sound on/off button.
 
 The cast and the desk
 - The cast chapter (pages 13 and 14) is generated from the CAST_A and CAST_B lists in the build script. Names, roles and bios are the game's own, so keep them spoiler-free. Clicking a portrait opens the #castbox dialog.
 - The desk behind the book is img/dungeon-wide.webp (computers) and img/dungeon-tall.webp (phones, chosen by a media query in css/book.css). The dust and the torch flicker are added by js/book.js and switch off for people who prefer reduced motion.
+
+The book art
+- Pages: img/page-r.webp (right-hand pages) and img/page-l.webp (the same, mirrored, for left-hand pages). js/book.js adds the class "lp" to left pages.
+- Covers: img/cover-front.webp and img/cover-back.webp (mirrored). The logo and picture sit on top in HTML, so the covers can be swapped without touching the text.
+- Ornaments: img/orn/ holds cut-outs from one ink sheet: div-a/b/c (chapter dividers), seal, key, dagger, torch, skull, candle, goblet, quill, scroll and four corner flourishes. Torch, skull, key, dagger and the corners are not used yet.
+- The text area on each page is set by the .pg padding in css/book.css, to stay inside the printed border of the page art. If you change the page art, check the border position and adjust the padding.

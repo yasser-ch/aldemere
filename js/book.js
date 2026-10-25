@@ -27,6 +27,40 @@
     ['audio/flip-1.mp3', 'audio/flip-2.mp3'].forEach(function (u) { var a = new Audio(u); a.preload = 'auto'; a.volume = .8; flips.push(a); });
   }
   if (soundOn) loadFlips();
+  var actx = null, nbuf = null;
+  function ac() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (actx.state === 'suspended') actx.resume(); return actx; }
+  function burst(t, dur, peak, freq, q) {
+    var c = ac(); if (!c) return;
+    if (!nbuf) { nbuf = c.createBuffer(1, c.sampleRate, c.sampleRate); var d = nbuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    var src = c.createBufferSource(); src.buffer = nbuf;
+    var f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+    var g = c.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .005); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(t); src.stop(t + dur + .02);
+  }
+  function tone(freq, t, dur, peak) {
+    var c = ac(); if (!c) return;
+    var o = c.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+    var g = c.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + .005); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  function sfxDice() { if (!soundOn) return; var c = ac(); if (!c) return; var t = c.currentTime; for (var i = 0; i < 7; i++) burst(t + i * .055 + Math.random() * .03, .04, .35 - i * .03, 2600 + Math.random() * 1500, 6); }
+  function sfxLand() { if (!soundOn) return; var c = ac(); if (!c) return; var t = c.currentTime; burst(t, .08, .5, 900, 2); tone(140, t, .12, .25); }
+  var tracks = [], trackN = 0, musicStarted = false, MVOL = .22;
+  function musicNext() {
+    var a = tracks[trackN++ % tracks.length]; a.currentTime = 0; a.volume = 0;
+    var pr = a.play(); if (pr && pr.catch) pr.catch(function () { musicStarted = false; });
+    var v = 0; var iv = setInterval(function () { v += .02; if (!soundOn || v >= MVOL) { clearInterval(iv); v = Math.min(v, MVOL); } a.volume = soundOn ? v : 0; }, 120);
+  }
+  function musicStart() {
+    if (!soundOn || musicStarted) return; musicStarted = true;
+    if (!tracks.length) ['audio/music-1.mp3', 'audio/music-2.mp3'].forEach(function (u) { var a = new Audio(u); a.preload = 'auto'; a.addEventListener('ended', musicNext); tracks.push(a); });
+    musicNext();
+  }
+  function musicSync() {
+    if (soundOn) { var cur = tracks[(trackN - 1 + tracks.length) % (tracks.length || 1)]; if (cur && cur.paused && musicStarted) { cur.volume = MVOL; var pr = cur.play(); if (pr && pr.catch) pr.catch(function(){}); } else musicStart(); }
+    else tracks.forEach(function (a) { a.pause(); });
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, musicStart, { once: true, passive: true }); });
   function rustle() {
     if (!soundOn) return;
     try {
@@ -46,7 +80,7 @@
     [].slice.call(stage.querySelectorAll('.controls')).forEach(function (c) { stage.removeChild(c); });
     sheets = [];
     book.classList.toggle('single', single);
-    pages.forEach(function (p, i) { if (i >= 2 && i < N - 1) p.setAttribute('data-n', i); else p.removeAttribute('data-n'); });
+    pages.forEach(function (p, i) { if (i >= 2 && i < N - 1) p.setAttribute('data-n', i); else p.removeAttribute('data-n'); p.classList.toggle('lp', !single && i % 2 === 1); });
 
     if (!single) {
       book.appendChild(make('div', 'board l')); book.appendChild(make('div', 'board r'));
@@ -84,7 +118,7 @@
     ui.nextb = make('button'); ui.nextb.type = 'button'; ui.nextb.textContent = 'Turn >'; ui.nextb.addEventListener('click', next);
     ui.toc = make('button'); ui.toc.type = 'button'; ui.toc.textContent = 'Contents'; ui.toc.addEventListener('click', function () { goPage('contents'); });
     ui.snd = make('button'); ui.snd.type = 'button'; ui.snd.addEventListener('click', function () {
-      soundOn = !soundOn; try { localStorage.setItem('aldemere-sound', soundOn ? '1' : '0'); } catch (e) {} paintSound(); rustle();
+      soundOn = !soundOn; try { localStorage.setItem('aldemere-sound', soundOn ? '1' : '0'); } catch (e) {} paintSound(); musicSync(); rustle();
     });
     [ui.prev, ui.where, ui.nextb, ui.toc, ui.snd].forEach(function (x) { c.appendChild(x); });
     stage.appendChild(c); paintSound();
@@ -105,7 +139,7 @@
     ui.prev.disabled = f === 0; ui.nextb.disabled = f === U || (single && f === U - 1);
     ui.cr.disabled = ui.nextb.disabled; ui.cl.disabled = f === 0;
     if (single) ui.where.textContent = (f + 1) + ' / ' + N;
-    else ui.where.textContent = f === 0 ? 'Cover' : (f === U ? 'The end' : 'Pages ' + vis.join('-'));
+    else ui.where.textContent = f === 0 ? 'Cover' : (f === U ? 'Closed' : 'Pages ' + vis.join('-'));
     var id = chapterId(vis);
     if (ui.rb) [].forEach.call(ui.rb.children, function (b) { b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false'); });
   }
@@ -117,7 +151,7 @@
   }
   function chapterId(vis) {
     var p = pages[vis[vis.length - 1]], id = p ? p.getAttribute('data-id') : '';
-    if (id === 'cover' || id === 'endpaper') return '';
+    if (id === 'cover' || id === 'endpaper' || id === 'endpaper2') return '';
     return id.replace(/2$/, '');
   }
   function pageIndex() { return single ? f : (f === 0 ? 0 : (f === U ? N - 1 : 2 * f)); }
@@ -283,24 +317,29 @@
     if (window.crypto && crypto.getRandomValues) { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % 20 + 1; }
     return Math.floor(Math.random() * 20) + 1;
   }
+  var dimg = document.getElementById('d20-img'), views = [];
+  [0, 1, 2, 3, 4].forEach(function (n) { var im = new Image(); im.src = 'img/die/die_' + n + '.webp'; views.push(im.src); });
   if (d20) d20.addEventListener('click', function () {
     if (rolling) return; rolling = true;
-    d20.classList.remove('nat20', 'nat1'); d20.classList.add('rolling'); verdict.className = 'verdict'; verdict.textContent = 'The die is in the air...';
-    var ticks = reduce ? 1 : 14, t = 0, final = rand20();
-    var iv = setInterval(function () {
-      t++; dn.textContent = t >= ticks ? final : rand20();
-      if (t >= ticks) {
-        clearInterval(iv); d20.classList.remove('rolling'); rolling = false;
-        var total = final + bonus, ok = total >= dc;
-        if (final === 20) d20.classList.add('nat20'); if (final === 1) d20.classList.add('nat1');
-        var line = final === 20 ? 'A natural 20. Legends begin like this.' : final === 1 ? 'A natural 1. Even legends begin somewhere.' : '';
-        verdict.className = 'verdict ' + (ok ? 'win' : 'lose');
-        verdict.textContent = (line ? line + ' ' : '') + total + ' against ' + dc + '. ' + (ok ? 'It holds.' : 'The die has opinions.');
-        history20.unshift('<li class="' + (ok ? 'win' : 'lose') + '"><span>' + final + ' + ' + bonus + ' = ' + total + '</span><span>vs ' + dc + (ok ? ' success' : ' failure') + '</span></li>');
-        history20 = history20.slice(0, 5); log.innerHTML = history20.join('');
-        rustle();
+    d20.classList.remove('nat20', 'nat1', 'landed'); d20.classList.add('rolling'); verdict.className = 'verdict'; verdict.textContent = 'The die is in the air...'; sfxDice();
+    var final = rand20(), delays = reduce ? [60] : [45, 45, 50, 55, 60, 70, 80, 95, 115, 140, 170, 210], k = 0, last = 0;
+    dn.textContent = '';
+    function step() {
+      if (k < delays.length) {
+        var v; do { v = 1 + Math.floor(Math.random() * 4); } while (v === last); last = v; dimg.src = views[v];
+        setTimeout(step, delays[k++]); return;
       }
-    }, 62);
+      dimg.src = views[0]; dn.textContent = final; d20.classList.remove('rolling'); d20.classList.add('landed'); rolling = false;
+      var total = final + bonus, ok = total >= dc;
+      if (final === 20) d20.classList.add('nat20'); if (final === 1) d20.classList.add('nat1');
+      var line = final === 20 ? 'A natural 20. Legends begin like this.' : final === 1 ? 'A natural 1. Even legends begin somewhere.' : '';
+      verdict.className = 'verdict ' + (ok ? 'win' : 'lose');
+      verdict.textContent = (line ? line + ' ' : '') + total + ' against ' + dc + '. ' + (ok ? 'It holds.' : 'The die has opinions.');
+      history20.unshift('<li class="' + (ok ? 'win' : 'lose') + '"><span>' + final + ' + ' + bonus + ' = ' + total + '</span><span>vs ' + dc + (ok ? ' success' : ' failure') + '</span></li>');
+      history20 = history20.slice(0, 5); log.innerHTML = history20.join('');
+      sfxLand();
+    }
+    step();
   });
 
   /* ── go ──────────────────────────────────────────────────────────────── */
