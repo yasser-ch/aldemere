@@ -3,7 +3,7 @@
 var SITE = {
   // Paste a form endpoint here (Formspree, Web3Forms, Getform...). Until then the forms tell
   // the visitor to write by email instead of pretending to send.
-  formEndpoint: '',
+  formEndpoint: 'https://formspree.io/f/xdegpkpb',
   // The address is stored in two pieces so it is not sitting in the page text for scrapers.
   mailUser: 'yasserchettour02',
   mailHost: 'gmail.com'
