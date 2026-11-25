@@ -271,11 +271,16 @@
 
   // hero sheet
   var heroes = [], CLASSES = {
-    warrior: { d: 'Strong arms from years of hauling, splitting and ploughing. Hits hard, takes a beating.', s: [4, 2, 1, 3, 2] },
-    ranger: { d: 'You know the Greywood paths and the wind. Always strikes first.', s: [2, 4, 3, 1, 2] },
-    rogue: { d: 'Quick hands, quicker excuses. Dodges and lands the hits that matter.', s: [2, 3, 3, 1, 3] },
-    mage: { d: 'The hedge-witch taught you three words that burn. Mends between blows.', s: [1, 2, 3, 4, 2] }
-  }, STATS = ['Might', 'Agility', 'Wits', 'Spirit', 'Charm'];
+    warrior: { d: 'Strong arms from years of hauling, splitting and ploughing. Hits hard, takes a beating.', s: [4, 2, 1, 2, 1, 4] },
+    ranger: { d: 'You know the Greywood paths and the wind. Always strikes first.', s: [2, 4, 3, 1, 1, 3] },
+    rogue: { d: 'Quick hands, quicker excuses. Dodges and lands the hits that matter.', s: [2, 3, 3, 1, 2, 3] },
+    mage: { d: 'The hedge-witch taught you three words that burn. Mends between blows.', s: [1, 2, 4, 3, 2, 2] },
+    barbarian: { d: 'You were raised where the winters kill the weak, and you did not die. The strongest body in any company, and a first burst of fury that few answer.', s: [5, 2, 1, 1, 1, 4] },
+    paladin: { d: 'You swore an oath before you were ready to keep it, and you keep it. Steady against the dark, and trusted by those who are not afraid of it.', s: [3, 1, 1, 3, 3, 3] },
+    monk: { d: 'Years of silence taught you where a blow will land before it is thrown. You wear nothing that would slow you, and you are rarely where the strike falls.', s: [2, 4, 2, 3, 1, 2] },
+    sorcerer: { d: 'The power was in your blood, not in any book, and it will not be taught or tamed. The greatest raw strength of any hero, and the frailest body.', s: [1, 2, 3, 3, 3, 2] },
+    warlock: { d: 'You asked something in the dark for power, and it answered. It has not yet named its price. Your blows feed on what they strike, and the shadows know you.', s: [1, 2, 3, 2, 3, 3] }
+  }, STATS = ['Might', 'Agility', 'Wits', 'Spirit', 'Charm', 'Vigour'];
   try { heroes = JSON.parse(document.getElementById('hero-data').textContent); } catch (e) {}
   var hero = 0, cls = 'warrior';
   function paintHero() {
